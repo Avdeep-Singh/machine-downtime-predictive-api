@@ -32,23 +32,25 @@ Uploads a CSV file containing manufacturing data.
     curl -X POST -F file=@/path/to/your/file.csv http://localhost:8000/upload
     ```
     (Replace /path/to/your/file.csv with the actual path to your CSV file).
-- **Response (Success):**
-    ```json
-    {"message": "Data uploaded successfully."}
-- **Response (Error - Invalid File Type):**
-    ```json
-    {"detail": "Invalid file type. Only CSV files are allowed."}
+- **Output**
+   - Response (Success):
+     ```json
+     {"message": "Data uploaded successfully."}
+   - Response (Error - Invalid File Type):**
+     ```json
+     {"detail": "Invalid file type. Only CSV files are allowed."}
 2. **Train Model (POST /train):**
 Trains the Gradient Boosting model on the uploaded data.
 - **Request:**
     ```bash
     curl -X POST http://localhost:8000/train
-- **Response (Success):**
-    ```json
-    {"accuracy": 0.95, "f1_score": 0.92}
-- **Response (Error - No Data Uploaded):**
-    ```json
-    {"detail": "No data uploaded yet. Please upload a CSV file first."}
+- **Output**
+   - Response (Success):
+     ```json
+     {"accuracy": 0.95, "f1_score": 0.92}
+   - Response (Error - No Data Uploaded):
+     ```json
+     {"detail": "No data uploaded yet. Please upload a CSV file first."}
 3. **Predict Downtime (POST /predict):**
 Makes a prediction on new data.
 - **Request:**
@@ -56,15 +58,16 @@ Makes a prediction on new data.
     curl -X POST -H "Content-Type: application/json" -d '{"Machine_ID": "Makino-L1-Unit1-2013", "Assembly_Line_No": "Shopfloor-L1", "Hydraulic_Pressure(bar)": 71.04, "Coolant_Pressure(bar)": 6.933724915, "Air_System_Pressure(bar)": 6.284964506, "Coolant_Temperature": 25.6, "Hydraulic_Oil_Temperature(?C)": 46.0, "Spindle_Bearing_Temperature(?C)": 33.4, "Spindle_Vibration(?m)": 1.291, "Tool_Vibration(?m)": 26.492, "Spindle_Speed(RPM)": 25892.0, "Voltage(volts)": 335.0, "Torque(Nm)": 24.05532601, "Cutting(kN)": 3.58}' http://localhost:8000/predict
     ```
     (Replace placeholders with actual feature values. Include all features used in training).
-- **Response (Success):**
-    ```json
-    {"Downtime": "No", "Confidence": 0.85} # Example values
-    ```
-    (Downtime 'No' means no fault in machine and 'Yes' means fault in machine)
-    (Assuming 0 maps to "Yes" which means Machine_Failure)
-- **Response (Error - Model Not Trained):**
-    ```json
-    {"detail": "Model not trained. Please train the model first."}
+- **Oitput**
+   - Response (Success):
+     ```json
+     {"Downtime": "No", "Confidence": 0.85} # Example values
+     ```
+     (Downtime 'No' means no fault in machine and 'Yes' means fault in machine)
+     (Assuming 0 maps to "Yes" which means Machine_Failure)
+   - Response (Error - Model Not Trained):
+     ```json
+     {"detail": "Model not trained. Please train the model first."}
 
 ## Data
 A sample dataset (Sample_Data_from_kaggle.csv) is included in the root directory.
