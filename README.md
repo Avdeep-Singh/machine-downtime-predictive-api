@@ -9,7 +9,7 @@ This project provides a RESTful API for predicting machine downtime using a Grad
 
 1. **Clone the repository:**
    ```bash
-   git clone <your_github_repository_url>
+   git clone https://github.com/Avdeep-Singh/machine-downtime-predictive-api
 2. **Create and activate a virtual environment:**
     ```bash
     python3 -m venv .venv
@@ -37,7 +37,7 @@ Uploads a CSV file containing manufacturing data.
     {"message": "Data uploaded successfully."}
 - **Response (Error - Invalid File Type):**
     ```json
-    - {"detail": "Invalid file type. Only CSV files are allowed."}
+    {"detail": "Invalid file type. Only CSV files are allowed."}
 2. **Train Model (POST /train):**
 Trains the Gradient Boosting model on the uploaded data.
 - **Request:**
@@ -45,7 +45,7 @@ Trains the Gradient Boosting model on the uploaded data.
     curl -X POST http://localhost:8000/train
 - **Response (Success):**
     ```json
-    {"accuracy": 0.95, "f1_score": 0.92}  # Example values
+    {"accuracy": 0.95, "f1_score": 0.92}
 - **Response (Error - No Data Uploaded):**
     ```json
     {"detail": "No data uploaded yet. Please upload a CSV file first."}
