@@ -58,7 +58,7 @@ Makes a prediction on new data.
     curl -X POST -H "Content-Type: application/json" -d '{"Machine_ID": "Makino-L1-Unit1-2013", "Assembly_Line_No": "Shopfloor-L1", "Hydraulic_Pressure(bar)": 71.04, "Coolant_Pressure(bar)": 6.933724915, "Air_System_Pressure(bar)": 6.284964506, "Coolant_Temperature": 25.6, "Hydraulic_Oil_Temperature(?C)": 46.0, "Spindle_Bearing_Temperature(?C)": 33.4, "Spindle_Vibration(?m)": 1.291, "Tool_Vibration(?m)": 26.492, "Spindle_Speed(RPM)": 25892.0, "Voltage(volts)": 335.0, "Torque(Nm)": 24.05532601, "Cutting(kN)": 3.58}' http://localhost:8000/predict
     ```
     (Replace placeholders with actual feature values. Include all features used in training).
-- **Oitput**
+- **Output**
    - Response (Success):
      ```json
      {"Downtime": "No", "Confidence": 0.85} # Example values
@@ -68,6 +68,25 @@ Makes a prediction on new data.
    - Response (Error - Model Not Trained):
      ```json
      {"detail": "Model not trained. Please train the model first."}
+
+## Limitations and Assumptions
+
+1. **Edge Case Handling**:  
+   The current implementation does not handle edge cases such as:
+   - Empty or malformed datasets during upload.  
+   - Missing values in the prediction input.  
+   These were omitted to focus on the core functionality. In production, robust input validation and error handling would be essential.
+
+2. **Unseen Categories in Predictions**:  
+   The model uses `LabelEncoder` for encoding categorical features. The `/predict` endpoint assumes all categorical input values are consistent with the training data. Predictions with unseen categories may raise errors. This could be mitigated by:
+   - Adding logic to handle unknown categories dynamically.  
+   - Re-training the encoder with new inputs.  
+
+3. **Static Preprocessing**:  
+   The preprocessing steps (e.g., dropping null values and the `Date` column) are hard-coded to suit the provided sample dataset. For generalization, these steps would need to be dynamic, based on dataset characteristics.  
+
+4. **Dataset-Specific Assumptions**:  
+   The API is designed to work with the sample dataset provided (`Sample_Data_from_kaggle.csv`). Additional preprocessing or modifications may be required to handle datasets with different formats or distributions.
 
 ## Data
 A sample dataset (Sample_Data_from_kaggle.csv) is included in the root directory.
@@ -94,7 +113,7 @@ A Gradient Boosting Classifier from scikit-learn is used for prediction.
 - Model parameters: 
     ***random_state = 42***
 - Preprocessing and Feature Engineering:
-    - Data Cleaning: The dataset is assumed to be pre-cleaned, meaning that it contains no duplicates, and obvious data inconsistencies have been addressed. Missing values are droped and the Data column is also droped.
+    - Data Cleaning: The dataset is assumed to be pre-cleaned, meaning that it contains no duplicates, and obvious data inconsistencies have been addressed. Missing values are dropped and the Data column is also dropped.
     - Categorical Encoding: Label Encoding is used to convert categorical features to numerical representations.
 
 ## Error Handling
