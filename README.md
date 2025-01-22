@@ -61,7 +61,7 @@ Makes a prediction on new data.
 - **Output**
    - Response (Success):
      ```json
-     {"Downtime": "No", "Confidence": 0.85} # Example values
+     {"Downtime": "No", "Confidence": 0.85}
      ```
      (Downtime 'No' means no fault in machine and 'Yes' means fault in machine)
      (Assuming 0 maps to "Yes" which means Machine_Failure)
