@@ -1,126 +1,56 @@
-# machine-downtime-predictive-api
-A FastAPI-based RESTful API for predicting machine downtime in manufacturing operations.
+# Machine downtime prediction API
 
-## Description
-
-This project provides a RESTful API for predicting machine downtime using a Gradient Boosting Classifier. The API allows users to upload manufacturing data, train the model, and make predictions on new data.
+A FastAPI demo for uploading a labeled CSV, training a scikit-learn gradient boosting classifier, and requesting downtime predictions.
 
 ## Setup
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/Avdeep-Singh/machine-downtime-predictive-api
-2. **Create and activate a virtual environment:**
-    ```bash
-    python3 -m venv .venv
-    .venv/bin/activate  # On Linux/macOS
-    .venv\Scripts\activate  # On Windows
-3. **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-## Usage
-1. **Running the API**
-    ```bash
-    uvicorn app:app --reload
-The API will be accessible at http://localhost:8000
+Use Python 3.12. From the repository root, create and activate a virtual environment:
 
-## API Endpoints
-1. **Upload Data (POST /upload):**
-Uploads a CSV file containing manufacturing data.
-- **Request:**
-    ```bash
-    curl -X POST -F file=@/path/to/your/file.csv http://localhost:8000/upload
-    ```
-    (Replace /path/to/your/file.csv with the actual path to your CSV file).
-- **Output**
-   - Response (Success):
-     ```json
-     {"message": "Data uploaded successfully."}
-   - Response (Error - Invalid File Type):**
-     ```json
-     {"detail": "Invalid file type. Only CSV files are allowed."}
-2. **Train Model (POST /train):**
-Trains the Gradient Boosting model on the uploaded data.
-- **Request:**
-    ```bash
-    curl -X POST http://localhost:8000/train
-- **Output**
-   - Response (Success):
-     ```json
-     {"accuracy": 0.95, "f1_score": 0.92}
-   - Response (Error - No Data Uploaded):
-     ```json
-     {"detail": "No data uploaded yet. Please upload a CSV file first."}
-3. **Predict Downtime (POST /predict):**
-Makes a prediction on new data.
-- **Request:**
-    ```bash
-    curl -X POST -H "Content-Type: application/json" -d '{"Machine_ID": "Makino-L1-Unit1-2013", "Assembly_Line_No": "Shopfloor-L1", "Hydraulic_Pressure(bar)": 71.04, "Coolant_Pressure(bar)": 6.933724915, "Air_System_Pressure(bar)": 6.284964506, "Coolant_Temperature": 25.6, "Hydraulic_Oil_Temperature(?C)": 46.0, "Spindle_Bearing_Temperature(?C)": 33.4, "Spindle_Vibration(?m)": 1.291, "Tool_Vibration(?m)": 26.492, "Spindle_Speed(RPM)": 25892.0, "Voltage(volts)": 335.0, "Torque(Nm)": 24.05532601, "Cutting(kN)": 3.58}' http://localhost:8000/predict
-    ```
-    (Replace placeholders with actual feature values. Include all features used in training).
-- **Output**
-   - Response (Success):
-     ```json
-     {"Downtime": "No", "Confidence": 0.85}
-     ```
-     (Downtime 'No' means no fault in machine and 'Yes' means fault in machine)
-     (Assuming 0 maps to "Yes" which means Machine_Failure)
-   - Response (Error - Model Not Trained):
-     ```json
-     {"detail": "Model not trained. Please train the model first."}
-
-## Limitations and Assumptions
-
-1. **Edge Case Handling**:  
-   The current implementation does not handle edge cases such as:
-   - Empty or malformed datasets during upload.  
-   - Missing values in the prediction input.  
-   These were omitted to focus on the core functionality. In production, robust input validation and error handling would be essential.
-
-2. **Unseen Categories in Predictions**:  
-   The model uses `LabelEncoder` for encoding categorical features. The `/predict` endpoint assumes all categorical input values are consistent with the training data. Predictions with unseen categories may raise errors. This could be mitigated by:
-   - Adding logic to handle unknown categories dynamically.  
-   - Re-training the encoder with new inputs.  
-
-3. **Static Preprocessing**:  
-   The preprocessing steps (e.g., dropping null values and the `Date` column) are hard-coded to suit the provided sample dataset. For generalization, these steps would need to be dynamic, based on dataset characteristics.  
-
-4. **Dataset-Specific Assumptions**:  
-   The API is designed to work with the sample dataset provided (`Sample_Data_from_kaggle.csv`). Additional preprocessing or modifications may be required to handle datasets with different formats or distributions.
-
-## Data
-A sample dataset (Sample_Data_from_kaggle.csv) is included in the root directory.
-The target variable is Downtime, where 0 represents machine failure ("Yes") and 1 represents no failure ("No").
-The dataset contains the following features:
-- Machine_ID
-- Assembly_Line_No
-- Hydraulic_Pressure(bar)
-- Coolant_Pressure(bar)
-- Air_System_Pressure(bar)
-- Coolant_Temperature
-- Hydraulic_Oil_Temperature(?C)
-- Spindle_Bearing_Temperature(?C)
-- Spindle_Vibration(?m)
-- Tool_Vibration(?m)
-- Spindle_Speed(RPM)
-- Voltage(volts)
-- Torque(Nm)
-- Cutting(kN)
-- Downtime
-
-## Model
-A Gradient Boosting Classifier from scikit-learn is used for prediction.
-- Model parameters: 
-    ***random_state = 42***
-- Preprocessing and Feature Engineering:
-    - Data Cleaning: The dataset is assumed to be pre-cleaned, meaning that it contains no duplicates, and obvious data inconsistencies have been addressed. Missing values are dropped and the Data column is also dropped.
-    - Categorical Encoding: Label Encoding is used to convert categorical features to numerical representations.
-
-## Error Handling
-The API includes error handling for invalid file uploads, missing data, and untrained models and other basic error handling is included which will help the user to understand the error.
-
-## Testing
-Automated tests are included in test_app.py. To run the tests:
-```bash
-pytest
+```sh
+python -m venv .venv
 ```
+
+Use `.\.venv\Scripts\Activate.ps1` in PowerShell or `source .venv/bin/activate` on macOS or Linux. Then run:
+
+```sh
+python -m pip install -r requirements.txt
+python -m examples.smoke_test
+```
+
+The smoke test creates synthetic data and exercises all three endpoints in process. It runs from a temporary working directory, trains a fresh model, and leaves the committed CSVs and model untouched. It checks the API contract without using its scores as evidence of real-world performance.
+
+## API flow
+
+| Step | Request | Response |
+|---|---|---|
+| Upload | `POST /upload` with multipart field `file` containing a CSV | A confirmation message |
+| Train | `POST /train` with no request body | Holdout accuracy and F1 score |
+| Predict | `POST /predict` with a JSON object containing the training features | `Downtime` and `Confidence` |
+
+The smoke test uses three numeric feature columns, plus `Date` and the binary `Downtime` label. The training code drops `Date`. Send the same features in the same order at prediction time and omit both `Date` and `Downtime`. For instance:
+
+```json
+{
+  "pressure": 55,
+  "temperature": 28,
+  "vibration": 0.2
+}
+```
+
+Use both target classes when training. The prediction code maps label `0` to downtime `Yes` and label `1` to `No`. The returned confidence is a model probability. Calibration has not been established.
+
+## Running the server
+
+The app reads and writes paths relative to its working directory. For a fresh run, start it from a separate empty directory with empty `data/` and `model/` subdirectories. Keep the virtual environment active and point Uvicorn at the source checkout:
+
+```sh
+python -m uvicorn app:app --app-dir "/absolute/path/to/machine-downtime-predictive-api" --host 127.0.0.1
+```
+
+Open `http://127.0.0.1:8000/docs` to exercise the endpoints. Upload your CSV, train, then predict. The API writes the uploaded data to `data/uploaded_data.csv` and the trained model to `model/trained_model.pkl`. It loads a model from that path at startup if present. Use only model artifacts you created or trust.
+
+## Data and limitations
+
+The repository contains two existing CSVs and a serialized model. The original sample filename references Kaggle. The exact dataset listing, redistribution terms, and model training inputs are unverified. The synthetic walkthrough is independent of those artifacts.
+
+The demo uses one local upload and one active model. The current preprocessing assumes a consistent schema and may reject missing fields or unseen categories. It is intended for local demonstration.
